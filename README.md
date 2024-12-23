@@ -5,3 +5,6 @@ This mod manager should support all skin mods, let me know if you have any issue
 
 Known issues:
 - Auto Select doesn't support the Epic Games version of the game
+
+
+Nexus Link: https://www.nexusmods.com/marvelrivals/mods/183/?tab=description
