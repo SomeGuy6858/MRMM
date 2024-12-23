@@ -142,6 +142,14 @@ def save_config():
     save_settings()
     messagebox.showinfo("Configuration Saved", "Configuration saved successfully!")
 
+def launch_game():
+    """Launch the game using Steam protocol and show a popup."""
+    try:
+        subprocess.run(["cmd", "/c", "start", "steam://rungameid/2767030"], shell=True)  # Launch game via Steam
+        messagebox.showinfo("Game Launched", "Game Launched. Have Fun <3")
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to launch game: {e}")
+        
 def load_config():
     config_file = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
     if not config_file:
@@ -237,6 +245,9 @@ tk.Label(folder_frame, text="Mod Location:", bg="#32324C", fg="#FFFFFF").grid(ro
 folder1_entry = tk.Entry(folder_frame, width=50)
 folder1_entry.grid(row=0, column=1, padx=5)
 tk.Button(folder_frame, text="Browse", command=select_folder1, bg="#F4D12B", fg="#32324C").grid(row=0, column=2, padx=5)
+
+# Launch Game
+tk.Button(folder_frame, text="Launch Game", command=launch_game, bg="#F4D12B", fg="#32324C").grid(row=0, column=3, padx=5)
 
 # Folder 2
 tk.Label(folder_frame, text="Mod Folder:", bg="#32324C", fg="#FFFFFF").grid(row=1, column=0, padx=5)
