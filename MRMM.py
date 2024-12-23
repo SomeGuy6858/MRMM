@@ -262,9 +262,38 @@ auto_load_checkbox = tk.Checkbutton(
 )
 auto_load_checkbox.pack(anchor="w")
 
-# File list frame
-file_frame = tk.Frame(root, bd=2, relief=tk.SUNKEN, bg="#32324C")
-file_frame.pack(pady=10, fill=tk.BOTH, expand=True)
+# Inside the main UI section where file_frame is created
+file_frame_container = tk.Frame(root, bd=2, relief=tk.SUNKEN, bg="#32324C")
+file_frame_container.pack(pady=10, fill=tk.BOTH, expand=True)
+
+# Create a canvas for scrolling
+canvas = tk.Canvas(file_frame_container, bg="#32324C", highlightthickness=0)
+canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+# Add a vertical scrollbar
+scrollbar = tk.Scrollbar(file_frame_container, orient=tk.VERTICAL, command=canvas.yview)
+scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+# Create an inner frame for the file list, inside the canvas
+file_frame = tk.Frame(canvas, bg="#32324C")
+
+# Attach the inner frame to the canvas
+file_frame_id = canvas.create_window((0, 0), window=file_frame, anchor="nw")
+
+# Configure the canvas to scroll with the scrollbar
+canvas.configure(yscrollcommand=scrollbar.set)
+
+# Add scrolling behavior
+def on_frame_configure(event):
+    canvas.configure(scrollregion=canvas.bbox("all"))
+
+def on_canvas_resize(event):
+    # Adjust the file_frame width to match the canvas width
+    canvas.itemconfig(file_frame_id, width=event.width)
+
+# Bind resizing and configure events
+file_frame.bind("<Configure>", on_frame_configure)
+canvas.bind("<Configure>", on_canvas_resize)
 
 # Refresh button
 refresh_button = tk.Button(root, text="Refresh", command=update_file_list, bg="#F4D12B", fg="#32324C")
