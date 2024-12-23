@@ -299,6 +299,24 @@ canvas.bind("<Configure>", on_canvas_resize)
 refresh_button = tk.Button(root, text="Refresh", command=update_file_list, bg="#F4D12B", fg="#32324C")
 refresh_button.pack(pady=5)
 
+
+# Bind the mouse wheel to the canvas for scrolling
+def on_mouse_wheel(event):
+    # Adjust the canvas scroll position
+    canvas.yview_scroll(-1 * (event.delta // 120), "units")
+
+# Bind the mouse wheel events to the canvas
+canvas.bind_all("<MouseWheel>", on_mouse_wheel)  # For Windows
+canvas.bind_all("<Button-4>", on_mouse_wheel)    # For Linux (scroll up)
+canvas.bind_all("<Button-5>", on_mouse_wheel)    # For Linux (scroll down)
+
+# Linux compatibility requires different bindings for mouse wheel
+def on_mouse_wheel_linux(event):
+    if event.num == 4:  # Scroll up
+        canvas.yview_scroll(-1, "units")
+    elif event.num == 5:  # Scroll down
+        canvas.yview_scroll(1, "units")
+
 root.config(bg="#32324C")
 root.iconbitmap("Icon.ico")
 
