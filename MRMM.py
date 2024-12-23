@@ -80,6 +80,7 @@ def select_folder1():
 
 def update_file_list():
     folder_1 = folder1_entry.get()
+    folder_2 = folder2_entry.get()
     if not os.path.exists(folder_1):
         return
 
@@ -87,6 +88,7 @@ def update_file_list():
     for widget in file_frame.winfo_children():
         widget.destroy()
 
+    # Add checkboxes for each file in folder 1
     for file in os.listdir(folder_1):
         file_path = os.path.join(folder_1, file)
         if os.path.isfile(file_path):
@@ -95,7 +97,9 @@ def update_file_list():
             cb = tk.Checkbutton(
                 file_frame, text=file, variable=var,
                 command=lambda f=file, v=var: toggle_file(f, v.get()),
-                bg="#32324C", fg="#FFFFFF", selectcolor="Black", activebackground="#F4D12B"
+                bg="#32324C", fg="#FFFFFF",
+                selectcolor="Black",  # Changes background color when checked
+                activebackground="#F4D12B",  # Changes background color when clicked
             )
             cb.pack(anchor="w", padx=5, pady=2)
             checkbox_vars[file] = var  # Store the variable for later use
@@ -103,7 +107,6 @@ def update_file_list():
             # Ensure the checkbox is updated to reflect the current state (checked/unchecked)
             var.set(file in selected_files)
             cb.deselect() if not var.get() else cb.select()  # Manually set the visual state
-
 
 def toggle_file(file, is_checked):
     folder_1 = folder1_entry.get()
@@ -158,7 +161,27 @@ def load_config():
 
     global selected_files
     selected_files = set(config_data.get("selected_files", []))
+
+    # After loading the config, update the file list
     update_file_list()
+
+    # Ensure ~mods folder exists and files are copied or deleted as per the config
+    folder_1 = folder1_entry.get()
+    folder_2 = folder2_entry.get()
+
+    if not os.path.exists(folder_2):
+        os.makedirs(folder_2)  # Ensure the target folder exists (especially ~mods folder)
+
+    for file in os.listdir(folder_1):
+        file_path_1 = os.path.join(folder_1, file)
+        file_path_2 = os.path.join(folder_2, file)
+
+        if file in selected_files:
+            if not os.path.exists(file_path_2):
+                shutil.copy2(file_path_1, file_path_2)  # Copy the file if missing
+        else:
+            if os.path.exists(file_path_2):
+                os.remove(file_path_2)  # Delete the file if unchecked
 
     last_config_file.set(config_file)
     save_settings()
@@ -175,6 +198,24 @@ def auto_load_last_config():
             global selected_files
             selected_files = set(config_data.get("selected_files", []))
             update_file_list()
+
+            # Ensure ~mods folder exists and files are copied or deleted as per the config
+            folder_1 = folder1_entry.get()
+            folder_2 = folder2_entry.get()
+
+            if not os.path.exists(folder_2):
+                os.makedirs(folder_2)  # Ensure the target folder exists (especially ~mods folder)
+
+            for file in os.listdir(folder_1):
+                file_path_1 = os.path.join(folder_1, file)
+                file_path_2 = os.path.join(folder_2, file)
+
+                if file in selected_files:
+                    if not os.path.exists(file_path_2):
+                        shutil.copy2(file_path_1, file_path_2)  # Copy the file if missing
+                else:
+                    if os.path.exists(file_path_2):
+                        os.remove(file_path_2)  # Delete the file if unchecked
 
 # Main UI
 root = tk.Tk()
