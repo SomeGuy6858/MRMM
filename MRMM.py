@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 import json
 import re
+import subprocess
 
 
 def select_folder(entry):
