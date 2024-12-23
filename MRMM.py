@@ -247,9 +247,6 @@ folder1_entry = tk.Entry(folder_frame, width=50)
 folder1_entry.grid(row=0, column=1, padx=5)
 tk.Button(folder_frame, text="Browse", command=select_folder1, bg="#F4D12B", fg="#32324C").grid(row=0, column=2, padx=5)
 
-# Launch Game
-tk.Button(folder_frame, text="Launch Game", command=launch_game, bg="#F4D12B", fg="#32324C").grid(row=0, column=3, padx=5)
-
 # Folder 2
 tk.Label(folder_frame, text="Mod Folder:", bg="#32324C", fg="#FFFFFF").grid(row=1, column=0, padx=5)
 folder2_entry = tk.Entry(folder_frame, width=50)
@@ -310,6 +307,10 @@ canvas.bind("<Configure>", on_canvas_resize)
 # Refresh button
 refresh_button = tk.Button(root, text="Refresh", command=update_file_list, bg="#F4D12B", fg="#32324C")
 refresh_button.pack(pady=5)
+# Launch Game
+launch_button = tk.Button(root, text="Launch Game", command=launch_game, bg="#F4D12B", fg="#32324C")
+launch_button.pack(pady=5)
+
 
 
 # Bind the mouse wheel to the canvas for scrolling
