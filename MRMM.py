@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 import json
 import re
+import subprocess
 
 
 def select_folder(entry):
@@ -142,6 +143,14 @@ def save_config():
     save_settings()
     messagebox.showinfo("Configuration Saved", "Configuration saved successfully!")
 
+def launch_game():
+    """Launch the game using Steam protocol and show a popup."""
+    try:
+        subprocess.run(["cmd", "/c", "start", "steam://rungameid/2767030"], shell=True)  # Launch game via Steam
+        messagebox.showinfo("Game Launched", "Game Launched. Have Fun <3")
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to launch game: {e}")
+        
 def load_config():
     config_file = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
     if not config_file:
@@ -298,6 +307,10 @@ canvas.bind("<Configure>", on_canvas_resize)
 # Refresh button
 refresh_button = tk.Button(root, text="Refresh", command=update_file_list, bg="#F4D12B", fg="#32324C")
 refresh_button.pack(pady=5)
+# Launch Game
+launch_button = tk.Button(root, text="Launch Game", command=launch_game, bg="#F4D12B", fg="#32324C")
+launch_button.pack(pady=5)
+
 
 
 # Bind the mouse wheel to the canvas for scrolling
