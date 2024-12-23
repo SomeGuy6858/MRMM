@@ -83,19 +83,27 @@ def update_file_list():
     if not os.path.exists(folder_1):
         return
 
+    # Destroy any existing checkbuttons to update the list
     for widget in file_frame.winfo_children():
         widget.destroy()
 
     for file in os.listdir(folder_1):
         file_path = os.path.join(folder_1, file)
         if os.path.isfile(file_path):
-            var = tk.BooleanVar(value=(file in selected_files))
+            # Initialize the variable for this checkbox based on the selected files set
+            var = tk.BooleanVar(value=(file in selected_files))  # Set the initial checked state
             cb = tk.Checkbutton(
                 file_frame, text=file, variable=var,
-                command=lambda f=file, v=var: toggle_file(f, v.get()), bg="#32324C", fg="#FFFFFF"
+                command=lambda f=file, v=var: toggle_file(f, v.get()),
+                bg="#32324C", fg="#FFFFFF", selectcolor="Black", activebackground="#F4D12B"
             )
-            cb.pack(anchor="w")
-            checkbox_vars[file] = var
+            cb.pack(anchor="w", padx=5, pady=2)
+            checkbox_vars[file] = var  # Store the variable for later use
+
+            # Ensure the checkbox is updated to reflect the current state (checked/unchecked)
+            var.set(file in selected_files)
+            cb.deselect() if not var.get() else cb.select()  # Manually set the visual state
+
 
 def toggle_file(file, is_checked):
     folder_1 = folder1_entry.get()
