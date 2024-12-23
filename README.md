@@ -8,3 +8,4 @@ Known issues:
 
 
 Nexus Link: https://www.nexusmods.com/marvelrivals/mods/183/?tab=description
+Instructions: https://www.youtube.com/watch?v=JLPbbnZ0O5k&t=1s
