@@ -3,8 +3,6 @@ This is a mod manager meant to reduce the headache of swapping out skins by taki
 
 This mod manager should support all skin mods, let me know if you have any issues.
 
-Known issues:
-- Auto Select doesn't support the Epic Games version of the game
 
 
 Nexus Link: https://www.nexusmods.com/marvelrivals/mods/183/?tab=description
