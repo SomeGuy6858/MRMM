@@ -5,7 +5,8 @@ from tkinter import filedialog, messagebox
 import json
 import re
 import subprocess
-
+import glob
+import difflib
 
 def select_folder(entry):
     folder = filedialog.askdirectory()
@@ -46,13 +47,37 @@ def find_steam_library():
 
     return libraries
 
+def find_epic_game_folder(): # Gonna be honest, I don't have the Epic version but from my research this should work
+    epic_manifest_path = os.path.join(os.getenv("ProgramData"), "Epic", "EpicGamesLauncher", "Data", "Manifests")
+    if not os.path.exists(epic_manifest_path):
+        return None  # Epic Games manifest folder not found
+
+    for manifest_file in glob.glob(os.path.join(epic_manifest_path, "*.item")):
+        try:
+            with open(manifest_file, "r") as f:
+                manifest_data = json.load(f)
+                install_location = manifest_data.get("InstallLocation", "")
+                game_path = os.path.join(install_location, "MarvelGame", "Marvel", "Content", "Paks")
+                if os.path.exists(game_path):
+                    return game_path
+        except (json.JSONDecodeError, KeyError):
+            continue  # Skip invalid or non-target manifest files
+    return None
+
 def find_game_folder():
+    # Check Steam installation first
     libraries = find_steam_library()
     for library in libraries:
         game_path = os.path.join(library, "steamapps", "common", "MarvelRivals", "MarvelGame", "Marvel", "Content", "Paks")
         if os.path.exists(game_path):
             return game_path
-    return None
+
+    # Fallback to Epic Games installation
+    game_path = find_epic_game_folder()
+    if game_path:
+        return game_path
+
+    return None  # Game folder not found
 
 def set_folder2_to_mods():
     game_path = find_game_folder()
@@ -62,15 +87,39 @@ def set_folder2_to_mods():
             os.makedirs(mods_path)  # Create the ~mods folder if it doesn't exist
         folder2_entry.delete(0, tk.END)
         folder2_entry.insert(0, mods_path)
+
+        # Automatically add/remove files based on the checkboxes
+        update_files_based_on_selection(mods_path)
     else:
         messagebox.showinfo("Game Path Not Found", "Could not find the game folder automatically. Please select it manually.")
         select_manual_folder2()
+
+def update_files_based_on_selection(folder_2):
+    folder_1 = folder1_entry.get()
+    if not os.path.exists(folder_1):
+        return
+
+    for file, var in checkbox_vars.items():
+        file_path_1 = os.path.join(folder_1, file)
+        file_path_2 = os.path.join(folder_2, file)
+
+        if var.get():  # If the file is checked
+            if not os.path.exists(file_path_2):
+                shutil.copy2(file_path_1, file_path_2)  # Copy the file
+        else:  # If the file is unchecked
+            if os.path.exists(file_path_2):
+                os.remove(file_path_2)  # Remove the file
+
 
 def select_manual_folder2():
     path = filedialog.askdirectory()
     if path:
         folder2_entry.delete(0, tk.END)
         folder2_entry.insert(0, path)
+
+        # Automatically add/remove files based on the checkboxes
+        update_files_based_on_selection(path)
+
 
 def select_folder1():
     path = filedialog.askdirectory()
@@ -125,6 +174,9 @@ def toggle_file(file, is_checked):
         if os.path.exists(file_path_2):
             os.remove(file_path_2)
         selected_files.discard(file)
+
+    # Check for compatibility issues
+    check_for_compatibility_issues()
 
 def save_config():
     config_file = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
@@ -226,6 +278,38 @@ def auto_load_last_config():
                     if os.path.exists(file_path_2):
                         os.remove(file_path_2)  # Delete the file if unchecked
 
+def filter_files(*args):
+    """Filter the files displayed based on the search query."""
+    query = search_var.get().lower()
+    for widget in file_frame.winfo_children():
+        widget.destroy()
+    
+    for file in os.listdir(folder1_entry.get()):
+        file_path = os.path.join(folder1_entry.get(), file)
+        if os.path.isfile(file_path) and query in file.lower():
+            var = checkbox_vars.get(file, tk.BooleanVar(value=(file in selected_files)))
+            cb = tk.Checkbutton(
+                file_frame, text=file, variable=var,
+                command=lambda f=file, v=var: toggle_file(f, v.get()),
+                bg="#32324C", fg="#FFFFFF"
+            )
+            cb.pack(anchor="w")
+            checkbox_vars[file] = var
+
+def check_for_compatibility_issues():
+    selected_files_list = list(selected_files)
+    for i in range(len(selected_files_list)):
+        for j in range(i + 1, len(selected_files_list)):
+            file1 = selected_files_list[i]
+            file2 = selected_files_list[j]
+            # Use SequenceMatcher to check similarity
+            similarity = difflib.SequenceMatcher(None, file1.lower(), file2.lower()).ratio()
+            if similarity > 0.7:  # Adjust threshold as needed
+                warning_label.config(text="Potential compatibility issue detected!")
+                return
+    warning_label.config(text="")  # Clear the warning if no issues are found
+
+
 # Main UI
 root = tk.Tk()
 root.title("MRMM")
@@ -260,6 +344,28 @@ config_frame.pack(pady=10)
 
 tk.Button(config_frame, text="Save Config", command=save_config, bg="#F4D12B", fg="#32324C").pack(side="left", padx=5)
 tk.Button(config_frame, text="Load Config", command=load_config, bg="#F4D12B", fg="#32324C").pack(side="left", padx=5)
+
+# Search bar frame
+search_frame = tk.Frame(root, bg="#32324C")
+search_frame.pack(pady=5, fill=tk.X)
+
+# Center the search bar
+search_frame.grid_columnconfigure(0, weight=1)  # Add weight to center the widgets
+search_frame.grid_columnconfigure(2, weight=1)  # Add weight to center the widgets
+
+# Search label
+tk.Label(search_frame, text="Search:", bg="#32324C", fg="#FFFFFF").grid(row=0, column=1, padx=5)
+
+# Search entry
+search_var = tk.StringVar()
+search_var.trace_add("write", filter_files)  # Bind search to filter function
+
+search_entry = tk.Entry(search_frame, textvariable=search_var, width=30)
+search_entry.grid(row=1, column=1, padx=5)
+
+# No longer needed, keeping for reference
+#file_frame = tk.Frame(root, bd=2, relief=tk.SUNKEN, bg="#32324C")
+#file_frame.pack(pady=10, fill=tk.BOTH, expand=True)
 
 # Auto-load checkbox
 auto_load_frame = tk.Frame(root, bg="#32324C")
@@ -310,11 +416,15 @@ refresh_button.pack(pady=5)
 # Launch Game
 launch_button = tk.Button(root, text="Launch Game", command=launch_game, bg="#F4D12B", fg="#32324C")
 launch_button.pack(pady=5)
-
+# Warning label for compatibility issues
+warning_label = tk.Label(root, text="", bg="#32324C", fg="#FF3333", font=("Arial", 10, "bold"))
+warning_label.pack(pady=5)
 
 
 # Bind the mouse wheel to the canvas for scrolling
 def on_mouse_wheel(event):
+    if canvas.yview()[0] == 0 and event.delta > 0:
+        return  # Prevent scrolling up at the top
     # Adjust the canvas scroll position
     canvas.yview_scroll(-1 * (event.delta // 120), "units")
 
@@ -333,7 +443,7 @@ def on_mouse_wheel_linux(event):
 root.config(bg="#32324C")
 root.iconbitmap("Icon.ico")
 
-root.geometry("600x550")
+root.geometry("600x800")
 
 # Auto-load last config on startup
 auto_load_last_config()
