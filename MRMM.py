@@ -130,7 +130,7 @@ def select_folder1():
 
 def update_file_list():
     folder_1 = folder1_entry.get()
-    folder_2 = folder2_entry.get()
+    #folder_2 = folder2_entry.get() not necessary anymore
     if not os.path.exists(folder_1):
         return
 
@@ -150,6 +150,7 @@ def update_file_list():
                 bg="#32324C", fg="#FFFFFF",
                 selectcolor="Black",  # Changes background color when checked
                 activebackground="#F4D12B",  # Changes background color when clicked
+                anchor= "w"
             )
             cb.pack(anchor="w", padx=5, pady=2)
             checkbox_vars[file] = var  # Store the variable for later use
@@ -282,7 +283,7 @@ def filter_files(*args):
     """Filter the files displayed based on the search query."""
     query = search_var.get().lower()
     for widget in file_frame.winfo_children():
-        widget.destroy()
+        widget.destroy()    
     
     for file in os.listdir(folder1_entry.get()):
         file_path = os.path.join(folder1_entry.get(), file)
@@ -290,10 +291,11 @@ def filter_files(*args):
             var = checkbox_vars.get(file, tk.BooleanVar(value=(file in selected_files)))
             cb = tk.Checkbutton(
                 file_frame, text=file, variable=var,
-                command=lambda f=file, v=var: toggle_file(f, v.get()),
-                bg="#32324C", fg="#FFFFFF"
+                command=lambda f=file, v=var: toggle_file(f, v.get()),font=("Segoe UI", 9),
+                bg="#32324C", fg="#FFFFFF", selectcolor="Black",
+                activebackground="#F4D12B"
             )
-            cb.pack(anchor="w")
+            cb.pack(anchor="w", padx=5, pady=2)
             checkbox_vars[file] = var
 
 def check_for_compatibility_issues():
@@ -304,7 +306,7 @@ def check_for_compatibility_issues():
             file2 = selected_files_list[j]
             # Use SequenceMatcher to check similarity
             similarity = difflib.SequenceMatcher(None, file1.lower(), file2.lower()).ratio()
-            if similarity > 0.7:  # Adjust threshold as needed
+            if similarity > 0.7:  # Adjust threshold as needed, seems good though
                 warning_label.config(text="Potential compatibility issue detected!")
                 return
     warning_label.config(text="")  # Clear the warning if no issues are found
@@ -433,7 +435,7 @@ canvas.bind_all("<MouseWheel>", on_mouse_wheel)  # For Windows
 canvas.bind_all("<Button-4>", on_mouse_wheel)    # For Linux (scroll up)
 canvas.bind_all("<Button-5>", on_mouse_wheel)    # For Linux (scroll down)
 
-# Linux compatibility requires different bindings for mouse wheel
+# Linux compatibility, no idea if this works properly or not, bindings need to be different than Windows, is the game even playable on Linux?
 def on_mouse_wheel_linux(event):
     if event.num == 4:  # Scroll up
         canvas.yview_scroll(-1, "units")
