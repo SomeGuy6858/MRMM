@@ -9,4 +9,4 @@ Nexus Link: https://www.nexusmods.com/marvelrivals/mods/183/?tab=description
 
 Instructions: https://www.youtube.com/watch?v=JLPbbnZ0O5k&t=1s
 
-Virustotal: https://www.virustotal.com/gui/file/2fa9f2b1ff24ae29d9b089bf03697b974e77c5152167de6980781d1813c06857
+Virustotal: [https://www.virustotal.com/gui/file/2fa9f2b1ff24ae29d9b089bf03697b974e77c5152167de6980781d1813c06857](https://www.virustotal.com/gui/file/89b2ab11ec585b0fbfa633fa6f1950058ab693c61f60bbaf5ceb66e9626c74a8)
