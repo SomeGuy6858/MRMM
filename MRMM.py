@@ -138,12 +138,29 @@ def update_file_list():
     for widget in file_frame.winfo_children():
         widget.destroy()
 
-    # Add checkboxes for each file in folder 1
+def update_file_list():
+    folder_1 = folder1_entry.get()
+    folder_2 = folder2_entry.get()
+
+    if not os.path.exists(folder_1):
+        return
+
+    # Clear existing widgets
+    for widget in file_frame.winfo_children():
+        widget.destroy()
+
+    # Get the current search query
+    search_query = search_entry.get().lower()
+
+    # List of files currently being displayed in the UI
+    displayed_files = []
+
+    # Populate the file list with filtered files
     for file in os.listdir(folder_1):
         file_path = os.path.join(folder_1, file)
-        if os.path.isfile(file_path):
-            # Initialize the variable for this checkbox based on the selected files set
-            var = tk.BooleanVar(value=(file in selected_files))  # Set the initial checked state
+        if os.path.isfile(file_path) and search_query in file.lower():
+            displayed_files.append(file)
+            var = tk.BooleanVar(value=(file in selected_files))
             cb = tk.Checkbutton(
                 file_frame, text=file, variable=var,
                 command=lambda f=file, v=var: toggle_file(f, v.get()),
@@ -152,12 +169,16 @@ def update_file_list():
                 activebackground="#F4D12B",  # Changes background color when clicked
                 anchor= "w"
             )
-            cb.pack(anchor="w", padx=5, pady=2)
-            checkbox_vars[file] = var  # Store the variable for later use
+            cb.pack(anchor="w", padx=5, pady=2)  # Ensure proper spacing
+            checkbox_vars[file] = var
 
-            # Ensure the checkbox is updated to reflect the current state (checked/unchecked)
-            var.set(file in selected_files)
-            cb.deselect() if not var.get() else cb.select()  # Manually set the visual state
+    # If Folder 2 exists, remove files that are not in the displayed list
+    if os.path.exists(folder_2):
+        for file in os.listdir(folder_2):
+            file_path_2 = os.path.join(folder_2, file)
+            if file not in displayed_files and os.path.isfile(file_path_2):
+                os.remove(file_path_2)
+
 
 def toggle_file(file, is_checked):
     folder_1 = folder1_entry.get()
@@ -278,6 +299,7 @@ def auto_load_last_config():
                 else:
                     if os.path.exists(file_path_2):
                         os.remove(file_path_2)  # Delete the file if unchecked
+    
 
 def filter_files(*args):
     """Filter the files displayed based on the search query."""
